@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -147,25 +146,32 @@ public class HomeController {
             session.setAttribute("errorMsg", "Email already exist");
         } else {
 
-            String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+            String imageName;
+
+            if (!file.isEmpty()) {
+
+                imageName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+                String uploadDir = System.getProperty("java.io.tmpdir") + "/uploads/";
+                File uploadFolder = new File(uploadDir);
+
+                if (!uploadFolder.exists()) {
+                    uploadFolder.mkdirs();
+                }
+
+                Path path = Paths.get(uploadDir + imageName);
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+            } else {
+                imageName = "default.jpg";
+            }
+
             user.setProfileImage(imageName);
 
             UserDtls saveUser = userService.saveUser(user);
 
             if (!ObjectUtils.isEmpty(saveUser)) {
-
-                if (!file.isEmpty()) {
-                    File saveDir = new File("uploads");
-                    if (!saveDir.exists()) {
-                        saveDir.mkdirs();
-                    }
-
-                    File saveFile = new File(saveDir, file.getOriginalFilename());
-                    file.transferTo(saveFile);
-                }
-
                 session.setAttribute("succMsg", "Register successfully");
-
             } else {
                 session.setAttribute("errorMsg", "Something wrong on server");
             }
