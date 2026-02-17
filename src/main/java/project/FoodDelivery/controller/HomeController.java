@@ -151,7 +151,13 @@ public class HomeController {
 
             if (!ObjectUtils.isEmpty(saveUser)) {
                 if (!file.isEmpty()) {
-                    File saveFile = new ClassPathResource("static/img").getFile();
+                   File saveDir = new File("uploads");
+if (!saveDir.exists()) {
+    saveDir.mkdirs();
+}
+                    File file = new File(saveDir, fileName);
+                    multipartFile.transferTo(file);
+
 
                     Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
                             + file.getOriginalFilename());
@@ -247,5 +253,6 @@ public class HomeController {
         return "product";
 
     }
+
 
 }
